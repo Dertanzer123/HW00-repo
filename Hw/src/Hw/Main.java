@@ -23,9 +23,12 @@ public class Main {
 
 	Stack transferStack = new Stack(40);// this is an tool for every other stack and its capacity should at least equal
 										// the biggest other Stack
+	boolean[] control1;
 
 	boolean flag1;
 	boolean flag2;
+
+	int index1;
 
 	public Main() throws IOException {
 
@@ -46,7 +49,7 @@ public class Main {
 		BufferedReader Br2 = new BufferedReader(Fr2);
 		while ((line = Br2.readLine()) != null) {
 
-			AnimalStack.Push(line.trim());
+			AnimalStack.Push(line.trim().toUpperCase());
 
 		}
 		Br2.close();
@@ -62,8 +65,10 @@ public class Main {
 		while (!transferStack.isempty()) {
 			AnimalStack.Push(transferStack.Pop());
 		}
-		WordStack = new Stack(line.trim().length());
-		BoardStack = new Stack(line.trim().length());
+		int wordsize = line.trim().length();
+		WordStack = new Stack(wordsize);
+		BoardStack = new Stack(wordsize);
+		control1 = new boolean[wordsize];
 		for (char a : line.trim().toCharArray()) {
 			WordStack.Push(a);
 			BoardStack.Push('-');
@@ -73,43 +78,113 @@ public class Main {
 		}
 
 		///////////////////////////// --------(2)
-		///////////////////////////// ---------(3)
+		///////////////////////////// ---------(3)this section is main part of the game
+		///////////////////////////// where we take input check it and refine stacks
 		Scanner scan1 = new Scanner(System.in);
 		char a;
-		
 		while (true) {
-			System.out.println("guees an letter , find which animal it is");
-			displayStack(BoardStack);
-			System.out.print("     usable letters:");
-			displayStack(LetterStack);
-			System.out.print("     used letters:");
-			displayStack(MissingLetterStack);
-			System.out.println();
-			a = scan1.nextLine().toUpperCase().charAt(0);
-			flag1 = true;
-			flag2 = true;
-			if (a < 65 || a > 90) {
-				flag2 = false;
+			while (true) {// flag1 is used to know is input letter used allready,flag2 is used for knowing
+							// is input a letter or naa
+				System.out.println("guees an letter , find which animal it is");
+				displayStack(BoardStack);
+				System.out.print("     usable letters:");
+				displayStack(LetterStack);
+				System.out.print("     missed letters:");
+				displayStack(MissingLetterStack);
+				System.out.println();
+				a = scan1.nextLine().toUpperCase().charAt(0);
+				flag1 = true;
+				flag2 = true;
+				if (a < 65 || a > 90) {
+					flag2 = false;
+				}
+				// <check is a == any missingletter
+				while (!MissingLetterStack.isempty()) {
+
+					if (MissingLetterStack.Peek().equals(a)) {
+						flag1 = false;
+						break;
+					}
+					transferStack.Push(MissingLetterStack.Pop());
+
+				}
+				while (!transferStack.isempty()) {
+					MissingLetterStack.Push(transferStack.Pop());
+				}
+				// <
+				// <check is a == any boardstack letter 
+				while (!BoardStack.isempty()) {
+
+					if (BoardStack.Peek().equals(a)) {
+						flag1 = false;
+						break;
+					}
+					transferStack.Push(BoardStack.Pop());
+
+				}
+				while (!transferStack.isempty()) {
+					BoardStack.Push(transferStack.Pop());
+				}
+				// <
+				if (!flag2) {
+					System.out.println("this input is not valid!!");
+				} else if (!flag1) {
+					System.out.println("you already tried this letter!!");
+				} else {
+					break;// if input is a unused letter this while will be breaked
+				}
 			}
-
-			while (!MissingLetterStack.isempty()) {
-
-				if (MissingLetterStack.Peek().equals(a)) {
-					flag1 = false;
+			flag1 = true;////// flag1 in here used for is a is a missedletter or naa
+			flag2 = true;
+			// < check a==letterstack letters remove equal one
+			while (!LetterStack.isempty()) {
+				if (LetterStack.Peek().equals(a)) {
+					LetterStack.Pop();
 					break;
 				}
-				transferStack.Push(MissingLetterStack.Pop());
-
+				transferStack.Push(LetterStack.Pop());
 			}
 			while (!transferStack.isempty()) {
-				MissingLetterStack.Push(transferStack.Pop());
+				LetterStack.Push(transferStack.Pop());
 			}
-			if (!flag2) {
-				System.out.println("this input is not valid!!");
-			} else if (!flag1) {
-				System.out.println("you already tried this letter!!");
-			} else {
+			// <
+			control1 = new boolean[wordsize];
+			index1 = 0;
+			// <check a == any wordstack letter mark index
+			while (!WordStack.isempty()) {
 
+				if (WordStack.Peek().equals(a)) {
+					flag1 = false;
+					control1[index1] = true;
+				}
+				transferStack.Push(WordStack.Pop());
+				index1++;
+			}
+			while (!transferStack.isempty()) {
+				WordStack.Push(transferStack.Pop());
+			}
+			// <
+			index1 = 0;
+			// <check any marked index == current index if equal replace current element at index with a
+			while (!BoardStack.isempty()) {
+
+				if (control1[index1]) {
+
+					transferStack.Push(a);
+					BoardStack.Pop();
+				} else {
+					transferStack.Push(BoardStack.Pop());
+				}
+
+				index1++;
+			}
+			while (!transferStack.isempty()) {
+				BoardStack.Push(transferStack.Pop());
+			}
+			// <
+			if(flag1) 
+			{
+				MissingLetterStack.Push(a);
 			}
 		}
 		///////////////////////////// ---------(3)
