@@ -27,8 +27,11 @@ public class Main {
 
 	boolean flag1;
 	boolean flag2;
+	boolean flag3;
+	boolean replay;
 
 	int index1;
+	int hp;
 
 	public Main() throws IOException {
 
@@ -49,7 +52,7 @@ public class Main {
 		BufferedReader Br2 = new BufferedReader(Fr2);
 		while ((line = Br2.readLine()) != null) {
 
-			AnimalStack.Push(line.trim().toUpperCase());
+			AnimalStack.Push(line.trim().toLowerCase());
 
 		}
 		Br2.close();
@@ -58,133 +61,200 @@ public class Main {
 		///////////////////////////// --------(2) this section will prepare the stacks
 		////////////////////////////// for the game and its should be remaked before
 		////////////////////////////// every game
-		for (int i = rnd.nextInt(14); i > 0; i--) {
-			transferStack.Push(AnimalStack.Pop());
-		}
-		line = (String) AnimalStack.Peek();
-		while (!transferStack.isempty()) {
-			AnimalStack.Push(transferStack.Pop());
-		}
-		int wordsize = line.trim().length();
-		WordStack = new Stack(wordsize);
-		BoardStack = new Stack(wordsize);
-		control1 = new boolean[wordsize];
-		for (char a : line.trim().toCharArray()) {
-			WordStack.Push(a);
-			BoardStack.Push('-');
-		}
-		for (int i = 65; i < 91; i++) {
-			LetterStack.Push((char) i);
-		}
-
-		///////////////////////////// --------(2)
-		///////////////////////////// ---------(3)this section is main part of the game
-		///////////////////////////// where we take input check it and refine stacks
 		Scanner scan1 = new Scanner(System.in);
-		char a;
-		while (true) {
-			while (true) {// flag1 is used to know is input letter used allready,flag2 is used for knowing
-							// is input a letter or naa
-				System.out.println("guees an letter , find which animal it is");
-				displayStack(BoardStack);
-				System.out.print("     usable letters:");
-				displayStack(LetterStack);
-				System.out.print("     missed letters:");
-				displayStack(MissingLetterStack);
-				System.out.println();
-				a = scan1.nextLine().toUpperCase().charAt(0);
-				flag1 = true;
-				flag2 = true;
-				if (a < 65 || a > 90) {
-					flag2 = false;
-				}
-				// <check is a == any missingletter
-				while (!MissingLetterStack.isempty()) {
-
-					if (MissingLetterStack.Peek().equals(a)) {
-						flag1 = false;
-						break;
-					}
-					transferStack.Push(MissingLetterStack.Pop());
-
-				}
-				while (!transferStack.isempty()) {
-					MissingLetterStack.Push(transferStack.Pop());
-				}
-				// <
-				// <check is a == any boardstack letter 
-				while (!BoardStack.isempty()) {
-
-					if (BoardStack.Peek().equals(a)) {
-						flag1 = false;
-						break;
-					}
-					transferStack.Push(BoardStack.Pop());
-
-				}
-				while (!transferStack.isempty()) {
-					BoardStack.Push(transferStack.Pop());
-				}
-				// <
-				if (!flag2) {
-					System.out.println("this input is not valid!!");
-				} else if (!flag1) {
-					System.out.println("you already tried this letter!!");
-				} else {
-					break;// if input is a unused letter this while will be breaked
-				}
+		replay=true;
+		while (replay) {
+			start: ;
+			for (int i = rnd.nextInt(14); i > 0; i--) {
+				transferStack.Push(AnimalStack.Pop());
 			}
-			flag1 = true;////// flag1 in here used for is a is a missedletter or naa
-			flag2 = true;
-			// < check a==letterstack letters remove equal one
-			while (!LetterStack.isempty()) {
-				if (LetterStack.Peek().equals(a)) {
-					LetterStack.Pop();
-					break;
-				}
-				transferStack.Push(LetterStack.Pop());
-			}
+			line = (String) AnimalStack.Peek();
 			while (!transferStack.isempty()) {
-				LetterStack.Push(transferStack.Pop());
+				AnimalStack.Push(transferStack.Pop());
 			}
-			// <
+			int wordsize = line.trim().length();
+			WordStack = new Stack(wordsize);
+			BoardStack = new Stack(wordsize);
 			control1 = new boolean[wordsize];
-			index1 = 0;
-			// <check a == any wordstack letter mark index
-			while (!WordStack.isempty()) {
+			for (char a : line.trim().toCharArray()) {
+				WordStack.Push((char) (a - 32));
+				BoardStack.Push('-');
+			}
+			for (int i = 65; i < 91; i++) {
+				LetterStack.Push((char) i);
+			}
 
-				if (WordStack.Peek().equals(a)) {
-					flag1 = false;
-					control1[index1] = true;
+			///////////////////////////// --------(2)
+			///////////////////////////// ---------(3)this section is main part of the game
+			///////////////////////////// where we take input check it and refine stacks
+
+			char a = 0;
+			hp = 120;
+			while (true) {
+				if (iswinned()) {
+					System.out.println("Woooleeyoo yoo winn !!!");
+					displayStack(BoardStack);
+					System.out.print("     usable letters:");
+					displayStack(LetterStack);
+					System.out.print("     missed letters:");
+					displayStack(MissingLetterStack);
+					System.out.print("     Hp : " + hp);
+					System.out.println();
+					if(end(true,scan1)) 
+					{
+						replay=true;
+					}
+					else 
+					{
+						replay=false;
+					}
+					break;
+					
+				} else if (hp <= 0) {
+					System.out.println("Hah loser!!");
+					displayStack(BoardStack);
+					System.out.print("     usable letters:");
+					displayStack(LetterStack);
+					System.out.print("     missed letters:");
+					displayStack(MissingLetterStack);
+					System.out.print("     Hp : " + hp);
+					System.out.println();
+					if(end(false,scan1)) 
+					{
+						replay=true;
+					}
+					else 
+					{
+						replay=false;
+					}
+					break;
+				} 
+				else {
+					while (true) {// flag1 is used to know is input letter used allready,flag2 is used for knowing
+									// is input a letter or naa
+
+						System.out.println("guees an letter , find which animal it is");
+						displayStack(BoardStack);
+						System.out.print("     usable letters:");
+						displayStack(LetterStack);
+						System.out.print("     missed letters:");
+						displayStack(MissingLetterStack);
+						System.out.print("     Hp : " + hp);
+						System.out.println();
+						flag3=true;
+						while(flag3) {
+						try {
+							flag3=false;
+						a = scan1.nextLine().charAt(0);
+						}
+						catch (Exception e) {
+							System.out.println("please enter something dont just push the enter button.");
+							flag3=true;
+						}
+						}
+						if (a < 65 || a > 90) {
+							a -= 32;
+						}
+						flag1 = true;
+						flag2 = true;
+						if (a < 65 || a > 90) {
+							flag2 = false;
+						}
+						// <check is a == any missingletter
+						while (!MissingLetterStack.isempty()) {
+
+							if (MissingLetterStack.Peek().equals(a)) {
+								flag1 = false;
+								break;
+							}
+							transferStack.Push(MissingLetterStack.Pop());
+
+						}
+						while (!transferStack.isempty()) {
+							MissingLetterStack.Push(transferStack.Pop());
+						}
+						// <
+						// <check is a == any boardstack letter
+						while (!BoardStack.isempty()) {
+
+							if (BoardStack.Peek().equals(a)) {
+								flag1 = false;
+								break;
+							}
+							transferStack.Push(BoardStack.Pop());
+
+						}
+						while (!transferStack.isempty()) {
+							BoardStack.Push(transferStack.Pop());
+						}
+						// <
+						if (!flag2) {
+							System.out.println("this input is not valid!!");
+						} else if (!flag1) {
+							System.out.println("you already tried this letter!!");
+						} else {
+							break;// if input is a unused letter this while will be breaked
+						}
+					}
+					flag1 = true;////// flag1 in here used for is a is a missedletter or naa
+					
+					// < check a==letterstack letters remove equal one
+					while (!LetterStack.isempty()) {
+						if (LetterStack.Peek().equals(a)) {
+							LetterStack.Pop();
+							break;
+						}
+						transferStack.Push(LetterStack.Pop());
+					}
+					while (!transferStack.isempty()) {
+						LetterStack.Push(transferStack.Pop());
+					}
+					// <
+					control1 = new boolean[wordsize];
+					index1 = 0;
+					// <check a == any wordstack letter mark index
+					while (!WordStack.isempty()) {
+
+						if (WordStack.Peek().equals(a)) {
+							flag1 = false;
+							control1[index1] = true;
+						}
+						transferStack.Push(WordStack.Pop());
+						index1++;
+					}
+					while (!transferStack.isempty()) {
+						WordStack.Push(transferStack.Pop());
+					}
+					// <
+					index1 = 0;
+					// <check any marked index == current index if equal replace current element at
+					// index with a
+					while (!BoardStack.isempty()) {
+
+						if (control1[index1]) {
+
+							transferStack.Push(a);
+							BoardStack.Pop();
+						} else {
+							transferStack.Push(BoardStack.Pop());
+						}
+
+						index1++;
+					}
+					while (!transferStack.isempty()) {
+						BoardStack.Push(transferStack.Pop());
+					}
+					// <
+					if (flag1) {
+						System.out.println("you guest it wrong haha!");
+						MissingLetterStack.Push(a);
+						if (a == 'A' || a == 'E' || a == 'I' || a == 'O' || a == 'U') {
+							hp -= 15;
+						} else {
+							hp -= 20;
+						}
+					}
 				}
-				transferStack.Push(WordStack.Pop());
-				index1++;
-			}
-			while (!transferStack.isempty()) {
-				WordStack.Push(transferStack.Pop());
-			}
-			// <
-			index1 = 0;
-			// <check any marked index == current index if equal replace current element at index with a
-			while (!BoardStack.isempty()) {
-
-				if (control1[index1]) {
-
-					transferStack.Push(a);
-					BoardStack.Pop();
-				} else {
-					transferStack.Push(BoardStack.Pop());
-				}
-
-				index1++;
-			}
-			while (!transferStack.isempty()) {
-				BoardStack.Push(transferStack.Pop());
-			}
-			// <
-			if(flag1) 
-			{
-				MissingLetterStack.Push(a);
 			}
 		}
 		///////////////////////////// ---------(3)
@@ -202,6 +272,45 @@ public class Main {
 
 		}
 
+	}
+
+	public boolean iswinned() {
+		while (!BoardStack.isempty()) {
+			transferStack.Push(BoardStack.Pop());
+		}
+		boolean flager = true;
+		while (!transferStack.isempty()) {
+			BoardStack.Push(transferStack.Pop());
+			if (BoardStack.Peek().equals('-')) {
+				flager = false;
+			}
+		}
+		return flager;
+	}
+
+	public boolean end(boolean fate, Scanner scan)// if winned fate== true else false
+	{
+		if (fate) {
+			System.out.println("brawoooo my friend you soo good play brawoo, i'll put your name on board.");
+			System.out.println("you already win but you can play again.");
+		} else {
+			System.out.println("i didnot see anybody worse like you hahaha!");
+			System.out.println("anyway do you want to try again maybe i lough more.");
+		}
+		String line;
+		while (true) {
+			line = scan.nextLine();
+			if (line.trim().toLowerCase().equals("yes")) {
+				System.out.println("you make the right desicion.");
+				return true;
+			} else if (line.trim().toLowerCase().equals("no")) {
+				System.out.println("okkey see you then");
+				return false;
+			} else {
+				System.out.println("please say yes or no,i dont understant any other.");
+				
+			}
+		}
 	}
 
 }
