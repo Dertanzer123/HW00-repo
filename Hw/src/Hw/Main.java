@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Random;
 import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 
 public class Main {
 
@@ -330,7 +332,7 @@ public class Main {
 		return flager;
 	}
 
-	public boolean end(boolean fate, Scanner scan)// if winned fate== true else false
+	public boolean end(boolean fate, Scanner scan) throws IOException// if winned fate== true else false
 	{
 		if (fate) {
 			System.out.println(
@@ -341,6 +343,18 @@ public class Main {
 			} while (name.trim() == null);
 			arangeelement(hp, name);
 			displayscores();
+			FileWriter fw1=new FileWriter(dirpath1);
+			BufferedWriter Bw1=new BufferedWriter(fw1);
+			for(int i=QScore.size();i>0;i--) 
+			{
+				Bw1.write(QName.Peek()+" "+QScore.Peek());
+				Bw1.newLine();
+				QName.Qadd(QName.Qtake());
+				QScore.Qadd(QScore.Qtake());
+			}
+			
+			Bw1.close();
+			fw1.close();
 			
 			System.out.println("you already win but you can play again.");
 		} else {
