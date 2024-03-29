@@ -15,14 +15,14 @@ public class Main {
 	CQueue QName;
 	CQueue QScore;
 
-	Stack AnimalStack = new Stack(14);
+	Stack AnimalStack = new Stack(20);
 	Stack LetterStack = new Stack(26);
 	Stack WordStack;
 	Stack BoardStack;
 	Stack MissingLetterStack = new Stack(26);
 
 	Stack transferStack = new Stack(50);// this is an tool for every other stack and its capacity should at least equal
-	Stack transferStack2= new Stack(50);								// the biggest other Stack
+	Stack transferStack2 = new Stack(50); // the biggest other Stack
 	boolean[] control1;
 
 	boolean flag1;
@@ -52,8 +52,8 @@ public class Main {
 		Fr1.close();
 		Fr1 = new FileReader(dirpath1);
 		Br1 = new BufferedReader(Fr1);
-		QName = new CQueue(Qlenght+10);
-		QScore = new CQueue(Qlenght+10);
+		QName = new CQueue(Qlenght + 10);
+		QScore = new CQueue(Qlenght + 10);
 		Br1 = new BufferedReader(Fr1);
 		while ((line = Br1.readLine()) != null) {
 			QName.Qadd(line.trim().split(" ")[0]);
@@ -80,17 +80,15 @@ public class Main {
 				QScore.Qadd(QScore.Qtake());
 			}
 		}
-		while(!transferStack.isempty()) 
-		{
+		while (!transferStack.isempty()) {
 			transferStack2.Push(transferStack.Pop());
-			
+
 		}
-		while(!transferStack2.isempty()) 
-		{
+		while (!transferStack2.isempty()) {
 			QScore.Qadd(transferStack2.Pop());
 			QName.Qadd(transferStack2.Pop());
 		}
-		transferStack2=null;
+		transferStack2 = null;
 		FileReader Fr2 = new FileReader(dirpath2);
 		BufferedReader Br2 = new BufferedReader(Fr2);
 		while ((line = Br2.readLine()) != null) {
@@ -109,7 +107,7 @@ public class Main {
 		replay = true;
 		while (replay) {
 			start: ;
-			for (int i = rnd.nextInt(14); i > 0; i--) {
+			for (int i = rnd.nextInt(AnimalStack.size()); i > 0; i--) {
 				transferStack.Push(AnimalStack.Pop());
 			}
 			line = (String) AnimalStack.Peek();
@@ -134,6 +132,7 @@ public class Main {
 
 			char a = 0;
 			hp = 120;
+			boolean joker = true;
 			while (true) {
 				if (iswinned()) {
 					System.out.println("Woooleeyoo yoo winn !!!");
@@ -182,7 +181,14 @@ public class Main {
 						while (flag3) {
 							try {
 								flag3 = false;
-								a = scan1.nextLine().charAt(0);
+								line = scan1.nextLine().trim();
+								a = line.charAt(0);
+								if (joker && line.toLowerCase().equals("joker")) {
+									a = joker();// joker method return one of the wordstack elements so 'a' is
+												// guarantied to be in wordstack
+									joker = false;
+								}
+
 							} catch (Exception e) {
 								System.out.println("please enter something dont just push the enter button.");
 								flag3 = true;
@@ -327,14 +333,15 @@ public class Main {
 	public boolean end(boolean fate, Scanner scan)// if winned fate== true else false
 	{
 		if (fate) {
-			System.out.println("brawoooo my friend you soo good play brawoo, i'll put your name on board.whats your name?");
+			System.out.println(
+					"brawoooo my friend you soo good play brawoo, i'll put your name on board.whats your name?");
 			String name;
-			do
-			{
-				name=scan.nextLine();	
-			}while(name.trim()==null);
+			do {
+				name = scan.nextLine();
+			} while (name.trim() == null);
 			arangeelement(hp, name);
 			displayscores();
+			
 			System.out.println("you already win but you can play again.");
 		} else {
 			System.out.println("i didnot see anybody worse like you hahaha!");
@@ -357,39 +364,79 @@ public class Main {
 	}
 
 	public void arangeelement(int score, String name) {
-		boolean flag4=true;
+		boolean flag4 = true;
 		for (int i = QScore.size(); i > 0; i--) {
-			
-			if(flag4&&score>(int)QScore.Peek())
-			{
+
+			if (flag4 && score > (int) QScore.Peek()) {
 				QScore.Qadd(score);
 				QName.Qadd(name);
-				
-				flag4=false;
+
+				flag4 = false;
 			}
 			QScore.Qadd(QScore.Qtake());
 			QName.Qadd(QName.Qtake());
-			
-		}
 
+		}
+		for (int i=QScore.size();i>QScore.size()-12;i--) 
+		{
+			QScore.Qadd(QScore.Qtake());
+			QName.Qadd(QName.Qtake());
+		}
+		for(int i=QScore.size()-12;i>0;i--) 
+		{
+			QScore.Qtake();
+			QName.Qtake();	
+		}
+		
+
+	}
+
+	public char joker() {
+		char output;
+		boolean flag5;
+		do {
+			flag5 = true;
+			for (int i = rnd.nextInt(WordStack.size()); i > 0; i--) {
+
+				transferStack.Push(WordStack.Pop());
+
+			}
+			output = (char) WordStack.Peek();
+			while (!transferStack.isempty()) {
+				WordStack.Push(transferStack.Pop());
+			}
+			for (int i = BoardStack.size(); i > 0; i--) {
+				if (BoardStack.Peek().equals(output)) {
+					flag5 = false;
+					break;
+				}
+				transferStack.Push(BoardStack.Pop());
+			}
+			while (!transferStack.isempty()) {
+				BoardStack.Push(transferStack.Pop());
+			}
+
+		} while (!flag5);
+
+		return output;
 	}
 
 	public void displayQueue(CQueue input) {
 		for (int i = input.size(); i > 0; i--) {
-			System.out.print(" "+input.Peek()+" ");
-			
+			System.out.print(" " + input.Peek() + " ");
+
 			input.Qadd(input.Qtake());
 		}
-		
+
 	}
+
 	public void displayscores() {
 		for (int i = QScore.size(); i > 0; i--) {
-			System.out.println("||"+QScore.Peek()+" : "+QName.Peek());
-			
-			
+			System.out.println("||" + QScore.Peek() + " : " + QName.Peek());
+
 			QScore.Qadd(QScore.Qtake());
 			QName.Qadd(QName.Qtake());
 		}
-		
+
 	}
 }
