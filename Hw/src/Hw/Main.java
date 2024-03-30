@@ -124,6 +124,8 @@ public class Main {
 				WordStack.Push((char) (a - 32));
 				BoardStack.Push('-');
 			}
+			LetterStack=new Stack(26);
+			MissingLetterStack=new Stack(26);
 			for (int i = 65; i < 91; i++) {
 				LetterStack.Push((char) i);
 			}
@@ -192,7 +194,7 @@ public class Main {
 								}
 
 							} catch (Exception e) {
-								System.out.println("please enter something dont just push the enter button.");
+								System.out.println("please enter something,dont just push the enter button.");
 								flag3 = true;
 							}
 						}
@@ -336,7 +338,7 @@ public class Main {
 	{
 		if (fate) {
 			System.out.println(
-					"brawoooo my friend you soo good play brawoo, i'll put your name on board.whats your name?");
+					"brawo my friend you win , i'll put your name on board.whats your name?");
 			String name;
 			do {
 				name = scan.nextLine();
